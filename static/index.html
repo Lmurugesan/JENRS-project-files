@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Check-In · Patient Screening</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --ink:#16232e; --ink-soft:#41525c; --paper:#eef2f1; --surface:#ffffff;
+    --surface-2:#f5f7f6; --line:#d7dedb; --line-soft:#e6ebe9; --muted:#5b6b68;
+    --accent:#2f7d6b; --accent-ink:#eaf5f1; --accent-strong:#1f5c4e;
+    --warn:#b5502e; --warn-bg:#fbeee7; --warn-line:#e8c4ae;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#e8edea; --ink-soft:#b7c4c0; --paper:#101617; --surface:#161e20;
+      --surface-2:#1b2426; --line:#293335; --line-soft:#222b2d; --muted:#93a29e;
+      --accent:#4fae95; --accent-ink:#0f2621; --accent-strong:#7bc9b3;
+      --warn:#e08a5f; --warn-bg:#2a1c15; --warn-line:#4a3223;
+    }
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'IBM Plex Sans',sans-serif;color:var(--ink);background:var(--paper);
+    height:100dvh;display:flex;flex-direction:column;overflow:hidden;font-size:15px;}
+  h1{font-family:'Source Serif 4',serif;}
+  .app{width:100%;max-width:680px;margin:0 auto;height:100%;display:flex;flex-direction:column;
+    background:var(--surface);border-left:1px solid var(--line);border-right:1px solid var(--line);}
+  header{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line);}
+  .mark{width:38px;height:38px;border-radius:10px;background:var(--accent-ink);color:var(--accent-strong);
+    display:flex;align-items:center;justify-content:center;font-family:'Source Serif 4';font-weight:600;font-size:17px;}
+  header .title h1{font-size:17px;font-weight:600;}
+  header .title p{font-size:12px;color:var(--muted);margin-top:2px;}
+  header .spacer{flex:1;}
+  .restart{font-size:12.5px;color:var(--muted);background:transparent;border:1px solid var(--line);
+    padding:7px 12px;border-radius:999px;cursor:pointer;}
+  .restart:hover{border-color:var(--accent);color:var(--accent-strong);}
+  #chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;}
+  .row{display:flex;align-items:flex-end;gap:10px;}
+  .row.doctor{justify-content:flex-start;}
+  .row.patient{justify-content:flex-end;}
+  .icon{width:28px;height:28px;border-radius:50%;flex-shrink:0;background:var(--accent-ink);
+    color:var(--accent-strong);display:flex;align-items:center;justify-content:center;font-size:13px;}
+  .row.patient .icon{display:none;}
+  .bubble{max-width:min(78%,480px);padding:11px 15px;border-radius:16px;font-size:14.5px;
+    line-height:1.55;word-break:break-word;white-space:pre-line;}
+  .row.doctor .bubble{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:4px 16px 16px 16px;}
+  .row.patient .bubble{background:var(--accent);color:var(--accent-ink);border-radius:16px 16px 4px 16px;}
+  .typing-dots{display:flex;gap:5px;padding:13px 16px;background:var(--surface-2);
+    border:1px solid var(--line-soft);border-radius:4px 16px 16px 16px;width:fit-content;}
+  .typing-dots span{width:6px;height:6px;background:var(--muted);border-radius:50%;animation:bop 1.3s ease-in-out infinite;}
+  .typing-dots span:nth-child(2){animation-delay:.16s;} .typing-dots span:nth-child(3){animation-delay:.32s;}
+  @keyframes bop{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+  #bar{background:var(--surface);border-top:1px solid var(--line);padding:14px 20px;display:flex;gap:10px;align-items:center;}
+  #txt{flex:1;border:1.5px solid var(--line);border-radius:22px;padding:10px 16px;font-size:14.5px;outline:none;
+    resize:none;line-height:1.4;max-height:90px;font-family:inherit;background:var(--surface-2);color:var(--ink);}
+  #txt:focus{border-color:var(--accent);background:var(--surface);}
+  #btn{width:42px;height:42px;border-radius:50%;background:var(--accent);color:var(--accent-ink);border:none;
+    cursor:pointer;font-size:16px;flex-shrink:0;}
+  #btn:disabled{background:var(--line);color:var(--muted);}
+  .disclaimer{text-align:center;font-size:10.5px;color:var(--muted);padding:0 20px 14px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="mark">+</div>
+    <div class="title"><h1>Check-In</h1><p>Real conversation, not a form</p></div>
+    <div class="spacer"></div>
+    <button id="restart-btn" class="restart">&#8635; Restart</button>
+  </header>
+  <div id="chat"></div>
+  <div id="bar">
+    <textarea id="txt" rows="1" placeholder="Tell me what's going on..." disabled></textarea>
+    <button id="btn" disabled>&#10148;</button>
+  </div>
+  <div class="disclaimer">Check-In is a screening aid, not a substitute for professional medical advice.</div>
+</div>
+<script>
+const chatEl = document.getElementById('chat');
+const txtEl = document.getElementById('txt');
+const btnEl = document.getElementById('btn');
+let session = null;
+
+function addBubble(text, role){
+  const row = document.createElement('div');
+  row.className = `row ${role}`;
+  if (role === 'doctor'){
+    const icon = document.createElement('div');
+    icon.className = 'icon'; icon.textContent = '+';
+    row.appendChild(icon);
+  }
+  const bub = document.createElement('div');
+  bub.className = 'bubble'; bub.textContent = text;
+  row.appendChild(bub);
+  chatEl.appendChild(row);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+function showTyping(){
+  const row = document.createElement('div');
+  row.className = 'row doctor'; row.id = 'typing-row';
+  row.innerHTML = '<div class="icon">+</div><div class="typing-dots"><span></span><span></span><span></span></div>';
+  chatEl.appendChild(row); chatEl.scrollTop = chatEl.scrollHeight;
+}
+function hideTyping(){ const el = document.getElementById('typing-row'); if (el) el.remove(); }
+function setEnabled(on){ txtEl.disabled = !on; btnEl.disabled = !on; if (on) txtEl.focus(); }
+
+txtEl.addEventListener('input', () => {
+  txtEl.style.height = 'auto';
+  txtEl.style.height = Math.min(txtEl.scrollHeight, 90) + 'px';
+});
+
+async function send(){
+  const text = txtEl.value.trim();
+  if (!text || !session) return;
+  txtEl.value = ''; txtEl.style.height = 'auto';
+  addBubble(text, 'patient');
+  setEnabled(false); showTyping();
+  try{
+    const res = await fetch('/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message:text, session})});
+    const data = await res.json();
+    hideTyping(); session = data.session;
+    addBubble(data.message, 'doctor');
+    if (session.done){ setEnabled(false); } else { setEnabled(true); }
+  } catch(e){
+    hideTyping(); addBubble('Something went wrong. Please try again.', 'doctor'); setEnabled(true);
+  }
+}
+btnEl.addEventListener('click', send);
+txtEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); } });
+document.getElementById('restart-btn').addEventListener('click', () => { chatEl.innerHTML = ''; startSession(); });
+
+async function startSession(){
+  showTyping();
+  try{
+    const res = await fetch('/start', {method:'POST'});
+    const data = await res.json();
+    hideTyping(); session = data.session;
+    addBubble(data.message, 'doctor'); setEnabled(true);
+  } catch(e){
+    hideTyping(); addBubble('Could not connect to the server.', 'doctor');
+  }
+}
+startSession();
+</script>
+</body>
+</html>

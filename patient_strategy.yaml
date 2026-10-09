@@ -1,0 +1,56 @@
+# ============================================================
+# PATIENT PRODUCTION RULES — conversation strategy only
+#
+# This file answers a different question than doctor_knowledge.yaml:
+# not "what evidence points to what disease" but "given what the
+# patient just said, which candidates are still plausible, and what
+# should be asked next?" It contains NO medical judgment of its own
+# — it only routes a mentioned symptom to the set of diseases where
+# that symptom is a confirming fact in doctor_knowledge.yaml.
+#
+# This is what makes a patient's first sentence feel like it's being
+# heard by someone who knows medicine, rather than being matched
+# against a fixed menu: "nausea" immediately narrows the field to
+# the diseases where nausea actually matters, before any question
+# is asked.
+# ============================================================
+
+# Maps an opening symptom (as recognized by the LLM/keyword layer)
+# to the diseases it could plausibly indicate. Investigation never
+# goes outside this list for a given symptom — a patient reporting
+# a headache is never asked about a UTI.
+symptom_routing:
+  elevated_glucose:    [diabetes, hypertension]
+  polyuria:             [diabetes, diabetes_insipidus, kidney_disorder, uti]
+  polydipsia:            [diabetes, diabetes_insipidus, dehydration, kidney_disorder]
+  increased_hunger:      [diabetes]
+  headache:               [hypertension, anemia]
+  elevated_bp:           [hypertension, diabetes]
+  chest_pain:             [hypertension, anemia]
+  fatigue:                 [anemia, diabetes, hypertension]
+  pale_skin:               [anemia]
+  dizziness:               [anemia, hypertension]
+  nausea:                   [nausea_vomiting, diabetes, anemia]
+  vomiting:                 [nausea_vomiting]
+  dysuria:                  [uti]
+  urinary_frequency:      [uti, diabetes, diabetes_insipidus, kidney_disorder]
+  cough:                    [asthma, tuberculosis]
+  shortness_of_breath:   [asthma, tuberculosis, anemia]
+  fever:                    [tuberculosis, uti, nausea_vomiting]
+  night_sweats:            [tuberculosis]
+  weight_loss:              [tuberculosis, diabetes]
+  other:                    [diabetes, hypertension, anemia, uti, asthma, tuberculosis]
+
+# Human-readable name for each category, used once per conversation
+# to frame the next stretch of questions the way a doctor would
+# narrate a transition ("let's check your airways") rather than
+# jumping straight into a clinical question with no lead-in.
+category_intro:
+  metabolic:       "a possible metabolic cause"
+  endocrine:        "a hormonal cause"
+  renal:             "whether your kidneys are involved"
+  cardiovascular:  "your cardiovascular system"
+  hematologic:      "your blood count"
+  urinary:           "your urinary system"
+  respiratory:      "your respiratory system"
+  gastrointestinal: "your digestive system"

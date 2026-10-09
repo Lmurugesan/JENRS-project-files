@@ -1,0 +1,198 @@
+# ============================================================
+# DOCTOR PRODUCTION RULES — medical knowledge only
+#
+# This file answers ONE question: "what evidence points to what
+# disease?" It says nothing about how a conversation is run, what
+# order to ask questions in, or how to talk to a patient — that is
+# the patient production rules' job (patient_strategy.yaml).
+#
+# This file is written to automatically whenever a doctor confirms
+# a new condition through the doctor conversation (doctor_app.py).
+# Nothing is added here without that explicit confirmation step.
+# ============================================================
+
+diseases:
+
+  diabetes:
+    category: metabolic
+    threshold: 60          # confidence % needed if no hallmark fires
+    symptoms:
+      - fact: elevated_glucose
+        question: "Have you been told your blood sugar or glucose is high?"
+        severity: 5
+        hallmark: true
+      - fact: high_hba1c
+        question: "Have you had a blood test showing high HbA1c?"
+        severity: 5
+        hallmark: true
+      - fact: polyuria
+        question: "Are you urinating much more often than usual?"
+        severity: 3
+      - fact: polydipsia
+        question: "Are you feeling extremely thirsty most of the time?"
+        severity: 3
+      - fact: increased_hunger
+        question: "Have you noticed you're hungrier than usual, even after eating?"
+        severity: 3
+      - fact: fatigue
+        question: "Are you feeling unusually tired or fatigued?"
+        severity: 2
+
+  diabetes_insipidus:
+    category: endocrine
+    threshold: 60
+    symptoms:
+      - fact: normal_glucose
+        question: "Has your blood sugar been tested and come back normal despite the thirst and urination?"
+        severity: 5
+        hallmark: true
+      - fact: dilute_urine
+        question: "Is your urine usually very pale or clear, even when you've been drinking little water?"
+        severity: 4
+      - fact: nocturia
+        question: "Do you wake up multiple times at night specifically to urinate?"
+        severity: 3
+
+  dehydration:
+    category: metabolic
+    threshold: 60
+    symptoms:
+      - fact: low_fluid_intake
+        question: "Have you been drinking noticeably less fluid than usual, or losing fluids from heat, exercise, vomiting, or diarrhea?"
+        severity: 5
+        hallmark: true
+      - fact: dry_mouth
+        question: "Does your mouth or skin feel unusually dry?"
+        severity: 3
+      - fact: reduced_urination
+        question: "Have you been urinating less than usual, with darker urine?"
+        severity: 4
+
+  kidney_disorder:
+    category: renal
+    threshold: 60
+    symptoms:
+      - fact: leg_swelling
+        question: "Have you noticed swelling in your legs, ankles, or around your eyes?"
+        severity: 4
+        hallmark: true
+      - fact: foamy_urine
+        question: "Has your urine looked foamy or frothy?"
+        severity: 4
+      - fact: flank_pain
+        question: "Do you have pain in your lower back or sides, below the ribs?"
+        severity: 3
+
+  hypertension:
+    category: cardiovascular
+    threshold: 60
+    symptoms:
+      - fact: history_of_hypertension
+        question: "Have you ever been told you have high blood pressure?"
+        severity: 4
+      - fact: on_bp_medication
+        question: "Are you currently on any blood pressure medication?"
+        severity: 5
+        hallmark: true
+      - fact: elevated_bp
+        question: "Have you had high blood pressure readings recently?"
+        severity: 5
+        hallmark: true
+      - fact: hypertension_headache
+        question: "Do you get frequent headaches, especially in the morning?"
+        severity: 2
+
+  anemia:
+    category: hematologic
+    threshold: 60
+    symptoms:
+      - fact: fatigue
+        question: "Do you feel unusually weak or tired most of the time?"
+        severity: 3
+      - fact: pale_skin
+        question: "Has anyone noticed your skin looks pale lately?"
+        severity: 4
+        hallmark: true
+      - fact: dizziness
+        question: "Do you feel dizzy or lightheaded when you stand up?"
+        severity: 3
+
+  uti:
+    category: urinary
+    threshold: 60
+    symptoms:
+      - fact: dysuria
+        question: "Do you feel pain or burning when you urinate?"
+        severity: 5
+        hallmark: true
+      - fact: urinary_frequency
+        question: "Do you need to urinate much more often than usual?"
+        severity: 3
+      - fact: urinary_urgency
+        question: "Do you get sudden, hard-to-control urges to urinate?"
+        severity: 3
+      - fact: suprapubic_pain
+        question: "Do you feel pressure or pain in your lower abdomen?"
+        severity: 4
+
+  asthma:
+    category: respiratory
+    threshold: 60
+    symptoms:
+      - fact: chronic_cough
+        question: "Do you have a recurring cough that gets worse at night?"
+        severity: 3
+      - fact: chest_tightness
+        question: "Do you feel tightness or pressure in your chest?"
+        severity: 4
+      - fact: wheezing
+        question: "Do you wheeze or hear a whistling sound when you breathe?"
+        severity: 5
+        hallmark: true
+      - fact: exercise_triggered
+        question: "Does cold air or exercise make your breathing worse?"
+        severity: 2
+
+  tuberculosis:
+    category: respiratory
+    threshold: 60
+    symptoms:
+      - fact: persistent_cough
+        question: "Have you had a cough lasting more than three weeks?"
+        severity: 4
+      - fact: coughing_blood
+        question: "Do you cough up blood or blood-stained mucus?"
+        severity: 5
+        hallmark: true
+      - fact: night_sweats
+        question: "Do you sweat heavily at night even when it is not hot?"
+        severity: 4
+      - fact: unexplained_weight_loss
+        question: "Have you lost weight recently without trying?"
+        severity: 4
+      - fact: tb_exposure
+        question: "Have you been in close contact with anyone who had TB?"
+        severity: 3
+
+  nausea_vomiting:
+    category: gastrointestinal
+    threshold: 60
+    symptoms:
+      - fact: severe_abdominal_pain
+        question: "Is the nausea accompanied by severe abdominal pain?"
+        severity: 5
+        hallmark: true
+      - fact: cant_keep_fluids_down
+        question: "Are you unable to keep fluids down at all?"
+        severity: 4
+        hallmark: true
+      - fact: blood_in_vomit
+        question: "Have you noticed any blood in your vomit?"
+        severity: 5
+        hallmark: true
+      - fact: recent_food
+        question: "Did this start shortly after eating something unusual?"
+        severity: 3
+      - fact: fever_with_nausea
+        question: "Do you also have a fever along with the nausea?"
+        severity: 3
